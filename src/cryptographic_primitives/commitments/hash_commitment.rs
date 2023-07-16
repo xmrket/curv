@@ -27,10 +27,10 @@ impl<H: Digest + Clone> Commitment<BigInt> for HashCommitment<H> {
         blinding_factor: &BigInt,
     ) -> BigInt {
         let digest_result = H::new()
-            .chain(message.to_bytes())
-            .chain(blinding_factor.to_bytes())
+            .chain_update(message.to_bytes())
+            .chain_update(blinding_factor.to_bytes())
             .finalize();
-        BigInt::from_bytes(digest_result.as_ref())
+        BigInt::from_bytes_be(digest_result.as_ref())
     }
 
     fn create_commitment(message: &BigInt) -> (BigInt, BigInt) {
@@ -51,7 +51,7 @@ mod tests {
 
     test_for_all_hashes!(test_bit_length_create_commitment);
     fn test_bit_length_create_commitment<H: Digest + Clone>() {
-        let hex_len = H::output_size() * 8;
+        let hex_len = <H as Digest>::output_size() * 8;
         let mut ctr_commit_len = 0;
         let mut ctr_blind_len = 0;
         let sample_size = 10_000;
@@ -77,7 +77,7 @@ mod tests {
 
     test_for_all_hashes!(test_bit_length_create_commitment_with_user_defined_randomness);
     fn test_bit_length_create_commitment_with_user_defined_randomness<H: Digest + Clone>() {
-        let sec_bits = H::output_size() * 8;
+        let sec_bits = <H as Digest>::output_size() * 8;
         let message = BigInt::sample(sec_bits);
         let (_commitment, blind_factor) = HashCommitment::<H>::create_commitment(&message);
         let commitment2 = HashCommitment::<H>::create_commitment_with_user_defined_randomness(
@@ -112,7 +112,7 @@ mod tests {
         digest.update(&message2);
         let bytes_blinding_factor = &BigInt::zero().to_bytes();
         digest.update(&bytes_blinding_factor);
-        let hash_result = BigInt::from_bytes(digest.finalize().as_ref());
+        let hash_result = BigInt::from_bytes_be(digest.finalize().as_ref());
         assert_eq!(&commitment, &hash_result);
     }
 }

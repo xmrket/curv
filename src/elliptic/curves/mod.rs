@@ -6,7 +6,7 @@
 //!
 //! Elliptic curve cryptography involves points and scalars. We provide respective structures
 //! [Point\<E\>](Point), [Scalar\<E\>](Scalar), where generic `E` stands for choice of elliptic
-//! curve, e.g. [Secp256k1] (`Point<Secp256k1>`, `Scalar<Secp256k1>`).
+//! curve, e.g. [Ed25519] (`Point<Ed25519>`, `Scalar<Ed25519>`).
 //!
 //! Various methods and traits are defined for points and scalars which basically empowers you to do
 //! anything you can do in elliptic curve cryptography.
@@ -15,10 +15,10 @@
 //!
 //! ### Public point/private scalar generation
 //! ```rust
-//! use curv::elliptic::curves::{Point, Scalar, Secp256k1};
+//! use curv::elliptic::curves::{Point, Scalar, Ed25519};
 //!
 //! // Samples a random nonzero scalar (mod group order)
-//! let secret = Scalar::<Secp256k1>::random();
+//! let secret = Scalar::<Ed25519>::random();
 //! // Multiplies generator at secret, retrieving a public point
 //! let public = Point::generator() * secret;
 //! ```
@@ -76,11 +76,7 @@
 //! Point, Scalar structures wrap ECPoint / ECScalar implementation, and provide a lot of convenient
 //! methods, implement arithmetic traits, etc.
 
-pub mod bls12_381;
-pub mod curve_ristretto;
 pub mod ed25519;
-pub mod p256;
-pub mod secp256_k1;
 
 #[cfg(test)]
 mod test;
@@ -88,13 +84,7 @@ mod traits;
 mod wrappers;
 
 #[doc(inline)]
-pub use self::{
-    bls12_381::{Bls12_381_1, Bls12_381_2},
-    curve_ristretto::Ristretto,
-    ed25519::Ed25519,
-    p256::Secp256r1,
-    secp256_k1::Secp256k1,
-};
+pub use self::ed25519::Ed25519;
 pub use self::{
     traits::{Curve, ECPoint, ECScalar, PointCoords},
     wrappers::{EncodedPoint, EncodedScalar, Generator, Point, Scalar},

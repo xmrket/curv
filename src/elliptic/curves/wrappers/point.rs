@@ -42,12 +42,12 @@ use crate::elliptic::curves::wrappers::encoded_point::EncodedPointChoice;
 /// You can add, subtract two points, or multiply point at scalar:
 ///
 /// ```rust
-/// # use curv::elliptic::curves::{Point, Scalar, Secp256k1};
+/// # use curv::elliptic::curves::{Point, Scalar, Ed25519};
 /// fn expression(
-///     a: Point<Secp256k1>,
-///     b: Point<Secp256k1>,
-///     c: Scalar<Secp256k1>,
-/// ) -> Point<Secp256k1> {
+///     a: Point<Ed25519>,
+///     b: Point<Ed25519>,
+///     c: Scalar<Ed25519>,
+/// ) -> Point<Ed25519> {
 ///     a + b * c
 /// }
 /// ```

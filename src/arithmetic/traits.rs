@@ -46,7 +46,9 @@ pub trait Converter: Sized {
     /// # use curv::arithmetic::{BigInt, Converter};
     /// assert_eq!(BigInt::from_bytes(&[15, 66, 64]), BigInt::from(1_000_000))
     /// ```
-    fn from_bytes(bytes: &[u8]) -> Self;
+    fn from_bytes_be(bytes: &[u8]) -> Self;
+
+    fn from_bytes_le(bytes: &[u8]) -> Self;
 
     /// Returns bytes representation of the number in an array with length chosen by the user
     /// if the array is larger than the bytes it pads it with zeros in the most significant bytes

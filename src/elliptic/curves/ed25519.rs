@@ -18,11 +18,13 @@ use curve25519_dalek::{
     constants,
     edwards::{CompressedEdwardsY, EdwardsPoint},
     scalar::Scalar,
-    traits::Identity,
+    traits::{BasepointTable, Identity},
 };
 use generic_array::GenericArray;
 use std::{convert::TryInto, ptr, str, sync::atomic};
 use zeroize::{Zeroize, Zeroizing};
+
+use serde::{Deserialize, Serialize};
 
 lazy_static::lazy_static! {
     static ref GROUP_ORDER: BigInt = Ed25519Scalar {
@@ -35,13 +37,13 @@ lazy_static::lazy_static! {
         ge: EdwardsPoint::identity(),
     };
 
-    static ref FE_ZERO: SK = Scalar::zero();
+    static ref FE_ZERO: SK = Scalar::default();
 
     static ref BASE_POINT2: Ed25519Point = {
         let bytes = GENERATOR.serialize_compressed();
-        let hashed = sha2::Sha256::digest(bytes.as_ref());
+        let hashed = sha2::Sha256::digest(&bytes);
         let hashed_twice = sha2::Sha256::digest(&hashed);
-        let p = CompressedEdwardsY::from_slice(&hashed_twice).decompress().unwrap();
+        let p = CompressedEdwardsY::from_slice(&hashed_twice).unwrap().decompress().unwrap();
         let eight = Scalar::from(8u8);
         Ed25519Point {
             purpose: "base_point2",
@@ -70,7 +72,7 @@ pub type SK = Scalar;
 ///   recovering x coordinate of ed25519 point from its y coordinate. Every time you call
 ///   `.x_coord()` or `from_coords()`, it takes y coordinate and runs `xrecover(y)` underhood. Keep
 ///   in mind that `xrecover` is quite expensive operation.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum Ed25519 {}
 
 #[derive(Clone, Debug)]
@@ -105,7 +107,7 @@ impl ECScalar for Ed25519Scalar {
     // we chose to multiply by 8 (co-factor) all group elements to work in the prime order sub group.
     // each random fe is having its 3 first bits zeroed
     fn random() -> Ed25519Scalar {
-        let scalar = Scalar::random(&mut rand::thread_rng());
+        let scalar = Scalar::random(&mut rand::rngs::ThreadRng::default());
         Ed25519Scalar {
             purpose: "random",
             fe: Zeroizing::new(scalar),
@@ -140,7 +142,7 @@ impl ECScalar for Ed25519Scalar {
     fn to_bigint(&self) -> BigInt {
         let mut t = self.fe.to_bytes();
         t.reverse();
-        BigInt::from_bytes(&t)
+        BigInt::from_bytes_be(&t)
     }
 
     fn serialize(&self) -> GenericArray<u8, Self::ScalarLength> {
@@ -151,7 +153,7 @@ impl ECScalar for Ed25519Scalar {
         let arr: [u8; 32] = bytes.try_into().map_err(|_| DeserializationError)?;
         Ok(Ed25519Scalar {
             purpose: "deserialize",
-            fe: SK::from_bits(arr).into(),
+            fe: SK::from_bytes_mod_order(arr).into(),
         })
     }
 
@@ -302,7 +304,7 @@ impl ECPoint for Ed25519Point {
 
         // reverse because BigInt is Big-Endian while the field element is Little-Endian
         bytes.reverse();
-        Some(BigInt::from_bytes(&bytes))
+        Some(BigInt::from_bytes_be(&bytes))
     }
 
     fn coords(&self) -> Option<PointCoords> {
@@ -314,7 +316,7 @@ impl ECPoint for Ed25519Point {
 
         // reverse because BigInt is Big-Endian while the field element is Little-Endian
         bytes.reverse();
-        let y = BigInt::from_bytes(&bytes);
+        let y = BigInt::from_bytes_be(&bytes);
         let x = xrecover(&y, is_odd);
         Some(PointCoords { x, y })
     }
@@ -352,7 +354,7 @@ impl ECPoint for Ed25519Point {
     fn generator_mul(scalar: &Self::Scalar) -> Self {
         Self {
             purpose: "generator_mul",
-            ge: constants::ED25519_BASEPOINT_TABLE.basepoint_mul(&scalar.fe), // Much faster than multiplying manually by the generator point.
+            ge: constants::ED25519_BASEPOINT_TABLE.mul_base(&scalar.fe), // Much faster than multiplying manually by the generator point.
         }
     }
 
@@ -479,8 +481,8 @@ mod tests {
             // coordinates are in little endian, but BigInt uses Big Endian.
             x.reverse();
             y.reverse();
-            let x_big = BigInt::from_bytes(&x);
-            let y_big = BigInt::from_bytes(&y);
+            let x_big = BigInt::from_bytes_be(&x);
+            let y_big = BigInt::from_bytes_be(&y);
             let coordinates = p.coords().unwrap();
             assert_eq!(coordinates.y, y_big);
             assert_eq!(coordinates.x, x_big);

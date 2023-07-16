@@ -69,10 +69,10 @@ impl<E: Curve> Polynomial<E> {
     ///
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Scalar, Point, Secp256k1};
+    /// use curv::elliptic::curves::{Scalar, Point, Ed25519};
     ///
     /// let coefs = vec![Scalar::random(), Scalar::random()];
-    /// let poly = Polynomial::<Secp256k1>::from_coefficients(coefs.clone());
+    /// let poly = Polynomial::<Ed25519>::from_coefficients(coefs.clone());
     ///
     /// assert_eq!(coefs, poly.coefficients());
     /// ```
@@ -85,13 +85,13 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::Secp256k1;
+    /// use curv::elliptic::curves::Ed25519;
     /// use curv::cryptographic_primitives::secret_sharing::PolynomialDegree;
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(3);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(3);
     /// assert_eq!(polynomial.degree(), 3.into());
     ///
-    /// let zero_polynomial = Polynomial::<Secp256k1>::sample_exact(PolynomialDegree::Infinity);
+    /// let zero_polynomial = Polynomial::<Ed25519>::sample_exact(PolynomialDegree::Infinity);
     /// assert_eq!(zero_polynomial.degree(), PolynomialDegree::Infinity);
     /// ```
     pub fn sample_exact(degree: impl Into<PolynomialDegree>) -> Self {
@@ -110,10 +110,10 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let const_term = Scalar::<Secp256k1>::random();
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact_with_fixed_const_term(3, const_term.clone());
+    /// let const_term = Scalar::<Ed25519>::random();
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact_with_fixed_const_term(3, const_term.clone());
     /// assert_eq!(polynomial.degree(), 3.into());
     /// assert_eq!(polynomial.evaluate(&Scalar::zero()), const_term);
     /// ```
@@ -130,14 +130,14 @@ impl<E: Curve> Polynomial<E> {
     ///
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::{Polynomial, PolynomialDegree};
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::from_coefficients(vec![
+    /// let polynomial = Polynomial::<Ed25519>::from_coefficients(vec![
     ///     Scalar::from(1), Scalar::from(2),
     /// ]);
     /// assert_eq!(polynomial.degree(), 1.into());
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::from_coefficients(vec![
+    /// let polynomial = Polynomial::<Ed25519>::from_coefficients(vec![
     ///     Scalar::zero()
     /// ]);
     /// assert_eq!(polynomial.degree(), PolynomialDegree::Infinity);
@@ -161,9 +161,9 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(2);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(2);
     ///
     /// let x = Scalar::from(10);
     /// let y = polynomial.evaluate(&x);
@@ -188,12 +188,12 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(2);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(2);
     ///
     /// let x: u16 = 10;
-    /// let y: Scalar<Secp256k1> = polynomial.evaluate_bigint(x);
+    /// let y: Scalar<Ed25519> = polynomial.evaluate_bigint(x);
     ///
     /// let a = polynomial.coefficients();
     /// let x = Scalar::from(x);
@@ -211,9 +211,9 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(2);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(2);
     ///
     /// let xs = &[Scalar::from(10), Scalar::from(11)];
     /// let ys = polynomial.evaluate_many(xs);
@@ -236,9 +236,9 @@ impl<E: Curve> Polynomial<E> {
     /// ## Example
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(2);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(2);
     ///
     /// let xs: &[u16] = &[10, 11];
     /// let ys = polynomial.evaluate_many_bigint(xs.iter().copied());
@@ -267,11 +267,11 @@ impl<E: Curve> Polynomial<E> {
     ///
     /// ```rust
     /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-    /// use curv::elliptic::curves::{Secp256k1, Scalar};
+    /// use curv::elliptic::curves::{Ed25519, Scalar};
     ///
-    /// let polynomial = Polynomial::<Secp256k1>::sample_exact(3);
+    /// let polynomial = Polynomial::<Ed25519>::sample_exact(3);
     /// let a = polynomial.coefficients();
-    /// let x = Scalar::<Secp256k1>::random();
+    /// let x = Scalar::<Ed25519>::random();
     /// assert_eq!(polynomial.evaluate(&x), &a[0] + &a[1] * &x + &a[2] * &x*&x + &a[3] * &x*&x*&x);
     /// ```
     pub fn coefficients(&self) -> &[Scalar<E>] {
@@ -298,7 +298,7 @@ impl<E: Curve> Polynomial<E> {
     /// # use curv::elliptic::curves::*;
     ///
     /// # let t = 3;
-    /// # let f = Polynomial::<Secp256r1>::sample_exact(t);
+    /// # let f = Polynomial::<Ed25519>::sample_exact(t);
     /// # let (x_0, x_1, x_2, x_3) = (Scalar::from(1), Scalar::from(2), Scalar::from(3), Scalar::from(4));
     /// # let (y_0, y_1, y_2, y_3) = (f.evaluate(&x_0), f.evaluate(&x_1), f.evaluate(&x_2), f.evaluate(&x_3));
     /// let xs = &[x_0, x_1, x_2, x_3];
@@ -338,11 +338,11 @@ impl<E: Curve> Polynomial<E> {
 ///
 /// ```rust
 /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-/// use curv::elliptic::curves::{Secp256k1, Scalar};
+/// use curv::elliptic::curves::{Ed25519, Scalar};
 ///
-/// let f = Polynomial::<Secp256k1>::sample_exact(3);
+/// let f = Polynomial::<Ed25519>::sample_exact(3);
 ///
-/// let s = Scalar::<Secp256k1>::random();
+/// let s = Scalar::<Ed25519>::random();
 /// let g = &f * &s;
 ///
 /// for (f_coef, g_coef) in f.coefficients().iter().zip(g.coefficients()) {
@@ -363,13 +363,13 @@ impl<E: Curve> ops::Mul<&Scalar<E>> for &Polynomial<E> {
 ///
 /// ```rust
 /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-/// use curv::elliptic::curves::{Secp256k1, Scalar};
+/// use curv::elliptic::curves::{Ed25519, Scalar};
 ///
-/// let f = Polynomial::<Secp256k1>::sample_exact(2);
-/// let g = Polynomial::<Secp256k1>::sample_exact(3);
+/// let f = Polynomial::<Ed25519>::sample_exact(2);
+/// let g = Polynomial::<Ed25519>::sample_exact(3);
 /// let h = &f + &g;
 ///
-/// let x = Scalar::<Secp256k1>::from(10);
+/// let x = Scalar::<Ed25519>::from(10);
 /// assert_eq!(h.evaluate(&x), f.evaluate(&x) + g.evaluate(&x));
 /// ```
 impl<E: Curve> ops::Add for &Polynomial<E> {
@@ -399,13 +399,13 @@ impl<E: Curve> ops::Add for &Polynomial<E> {
 ///
 /// ```rust
 /// # use curv::cryptographic_primitives::secret_sharing::Polynomial;
-/// use curv::elliptic::curves::{Secp256k1, Scalar};
+/// use curv::elliptic::curves::{Ed25519, Scalar};
 ///
-/// let f = Polynomial::<Secp256k1>::sample_exact(2);
-/// let g = Polynomial::<Secp256k1>::sample_exact(3);
+/// let f = Polynomial::<Ed25519>::sample_exact(2);
+/// let g = Polynomial::<Ed25519>::sample_exact(3);
 /// let h = &f - &g;
 ///
-/// let x = Scalar::<Secp256k1>::from(10);
+/// let x = Scalar::<Ed25519>::from(10);
 /// assert_eq!(h.evaluate(&x), f.evaluate(&x) - &g.evaluate(&x));
 /// ```
 impl<E: Curve> ops::Sub for &Polynomial<E> {

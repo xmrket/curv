@@ -23,12 +23,12 @@ use crate::BigInt;
 /// ### Example
 ///
 ///  ```rust
-/// # use curv::elliptic::curves::{Scalar, Secp256k1};
+/// # use curv::elliptic::curves::{Scalar, Ed25519};
 /// fn expression(
-///     a: &Scalar<Secp256k1>,
-///     b: &Scalar<Secp256k1>,
-///     c: &Scalar<Secp256k1>
-/// ) -> Scalar<Secp256k1> {
+///     a: &Scalar<Ed25519>,
+///     b: &Scalar<Ed25519>,
+///     c: &Scalar<Ed25519>
+/// ) -> Scalar<Ed25519> {
 ///     a + b * c
 /// }
 /// ```

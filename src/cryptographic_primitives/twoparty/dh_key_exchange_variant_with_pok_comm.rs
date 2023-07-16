@@ -79,13 +79,13 @@ impl Party1FirstMessage {
         // we use hash based commitment
         let pk_commitment_blind_factor = BigInt::sample(SECURITY_BITS);
         let pk_commitment = HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-            &BigInt::from_bytes(&public_share.to_bytes(true)),
+            &BigInt::from_bytes_be(&public_share.to_bytes(true)),
             &pk_commitment_blind_factor,
         );
 
         let zk_pok_blind_factor = BigInt::sample(SECURITY_BITS);
         let zk_pok_commitment = HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-            &BigInt::from_bytes(&d_log_proof.pk_t_rand_commitment.to_bytes(true)),
+            &BigInt::from_bytes_be(&d_log_proof.pk_t_rand_commitment.to_bytes(true)),
             &zk_pok_blind_factor,
         );
         let ec_key_pair = EcKeyPair {
@@ -117,13 +117,13 @@ impl Party1FirstMessage {
 
         let pk_commitment_blind_factor = BigInt::sample(SECURITY_BITS);
         let pk_commitment = HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-            &BigInt::from_bytes(&public_share.to_bytes(true)),
+            &BigInt::from_bytes_be(&public_share.to_bytes(true)),
             &pk_commitment_blind_factor,
         );
 
         let zk_pok_blind_factor = BigInt::sample(SECURITY_BITS);
         let zk_pok_commitment = HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-            &BigInt::from_bytes(&d_log_proof.pk_t_rand_commitment.to_bytes(true)),
+            &BigInt::from_bytes_be(&d_log_proof.pk_t_rand_commitment.to_bytes(true)),
             &zk_pok_blind_factor,
         );
 
@@ -216,7 +216,7 @@ impl Party2SecondMessage {
         let mut flag = true;
         if party_one_pk_commitment
             != &HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-                &BigInt::from_bytes(&party_one_public_share.to_bytes(true)),
+                &BigInt::from_bytes_be(&party_one_public_share.to_bytes(true)),
                 party_one_pk_commitment_blind_factor,
             )
         {
@@ -225,7 +225,7 @@ impl Party2SecondMessage {
 
         if party_one_zk_pok_commitment
             != &HashCommitment::<H>::create_commitment_with_user_defined_randomness(
-                &BigInt::from_bytes(&party_one_d_log_proof.pk_t_rand_commitment.to_bytes(true)),
+                &BigInt::from_bytes_be(&party_one_d_log_proof.pk_t_rand_commitment.to_bytes(true)),
                 party_one_zk_pok_blind_factor,
             )
         {

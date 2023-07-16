@@ -1,7 +1,4 @@
 use digest::Digest;
-use generic_array::GenericArray;
-use hmac::crypto_mac::MacError;
-use hmac::{Hmac, Mac, NewMac};
 use typenum::Unsigned;
 
 use crate::arithmetic::*;
@@ -18,15 +15,16 @@ use crate::elliptic::curves::{Curve, ECScalar, Point, Scalar};
 /// use sha2::Sha256;
 /// use curv::arithmetic::*;
 /// use curv::cryptographic_primitives::hashing::{Digest, DigestExt};
-/// use curv::elliptic::curves::{Secp256k1, Point};
+/// use curv::elliptic::curves::{Ed25519, Point};
 ///
 /// let hash = Sha256::new()
-///     .chain_point(&Point::<Secp256k1>::generator())
-///     .chain_point(Point::<Secp256k1>::base_point2())
+///     .chain_point(&Point::<Ed25519>::generator())
+///     .chain_point(Point::<Ed25519>::base_point2())
 ///     .chain_bigint(&BigInt::from(10))
-///     .result_bigint();
+///     .result_bigint()
+///     .to_hex();
 ///
-/// assert_eq!(hash, BigInt::from_hex("73764f937fbe25092466b417fa66ad9c62607865e1f8151df253aa3a2fd7599b").unwrap());
+/// assert_eq!(hash, "b6437bb4367f6c1327ee8fd3521ab283702c6ebf0e7e2ce8512239b6cde9b91");
 /// ```
 pub trait DigestExt {
     fn input_bigint(&mut self, n: &BigInt);
@@ -100,21 +98,21 @@ where
 
     fn result_bigint(self) -> BigInt {
         let result = self.finalize();
-        BigInt::from_bytes(&result)
+        BigInt::from_bytes_be(&result)
     }
 
     fn result_scalar<E: Curve>(self) -> Scalar<E> {
         let scalar_len = <<E::Scalar as ECScalar>::ScalarLength as Unsigned>::to_usize();
         assert!(
-            Self::output_size() >= scalar_len,
+            <Self as Digest>::output_size() >= scalar_len,
             "Output size of the hash({}) is smaller than the scalar length({})",
-            Self::output_size(),
+            <Self as Digest>::output_size(),
             scalar_len
         );
         // Try and increment.
         for i in 0u32.. {
             let starting_state = self.clone();
-            let hash = starting_state.chain(i.to_be_bytes()).finalize();
+            let hash = starting_state.chain_update(i.to_be_bytes()).finalize();
             if let Ok(scalar) = Scalar::from_bytes(&hash[..scalar_len]) {
                 return scalar;
             }
@@ -123,62 +121,12 @@ where
     }
 
     fn digest_bigint(bytes: &[u8]) -> BigInt {
-        Self::new().chain(bytes).result_bigint()
-    }
-}
-
-/// [Hmac] extension allowing to use bigints to instantiate hmac, update, and finalize it.
-pub trait HmacExt: Sized {
-    fn new_bigint(key: &BigInt) -> Self;
-
-    fn input_bigint(&mut self, n: &BigInt);
-
-    fn chain_bigint(mut self, n: &BigInt) -> Self
-    where
-        Self: Sized,
-    {
-        self.input_bigint(n);
-        self
-    }
-
-    fn result_bigint(self) -> BigInt;
-    fn verify_bigint(self, code: &BigInt) -> Result<(), MacError>;
-}
-
-impl<D> HmacExt for Hmac<D>
-where
-    D: digest::Update + digest::BlockInput + digest::FixedOutput + digest::Reset + Default + Clone,
-{
-    fn new_bigint(key: &BigInt) -> Self {
-        let bytes = key.to_bytes();
-        Self::new_from_slice(&bytes).expect("HMAC must take a key of any length")
-    }
-
-    fn input_bigint(&mut self, n: &BigInt) {
-        self.update(&n.to_bytes())
-    }
-
-    fn result_bigint(self) -> BigInt {
-        BigInt::from_bytes(&self.finalize().into_bytes())
-    }
-
-    fn verify_bigint(self, code: &BigInt) -> Result<(), MacError> {
-        let mut code_array = GenericArray::<u8, <D as digest::FixedOutput>::OutputSize>::default();
-        let code_length = code_array.len();
-        let bytes = code.to_bytes();
-        if bytes.len() > code_length {
-            return Err(MacError);
-        }
-        code_array[code_length - bytes.len()..].copy_from_slice(&bytes);
-        self.verify(&code_array)
+        Self::new().chain_update(bytes).result_bigint()
     }
 }
 
 #[cfg(test)]
 mod test {
-    use digest::generic_array::ArrayLength;
-    use digest::{BlockInput, FixedOutput, Reset, Update};
-    use hmac::Hmac;
     use sha2::{Sha256, Sha512};
 
     use super::*;
@@ -298,40 +246,5 @@ mod test {
             .chain_point(&generator)
             .result_scalar::<E>();
         assert_eq!(result2, result3);
-    }
-
-    crate::test_for_all_hashes!(create_hmac_test);
-    fn create_hmac_test<H>()
-    where
-        H: Update + BlockInput + FixedOutput + Reset + Default + Clone,
-        H::BlockSize: ArrayLength<u8>,
-        H::OutputSize: ArrayLength<u8>,
-    {
-        let key = BigInt::sample(512);
-        let result1 = Hmac::<H>::new_bigint(&key)
-            .chain_bigint(&BigInt::from(10))
-            .result_bigint();
-        assert!(Hmac::<H>::new_bigint(&key)
-            .chain_bigint(&BigInt::from(10))
-            .verify_bigint(&result1)
-            .is_ok());
-
-        let key2 = BigInt::sample(512);
-        // same data , different key
-        let result2 = Hmac::<H>::new_bigint(&key2)
-            .chain_bigint(&BigInt::from(10))
-            .result_bigint();
-        assert_ne!(result1, result2);
-        // same key , different data
-        let result3 = Hmac::<H>::new_bigint(&key)
-            .chain_bigint(&BigInt::from(10))
-            .chain_bigint(&BigInt::from(11))
-            .result_bigint();
-        assert_ne!(result1, result3);
-        // same key, same data
-        let result4 = Hmac::<H>::new_bigint(&key)
-            .chain_bigint(&BigInt::from(10))
-            .result_bigint();
-        assert_eq!(result1, result4)
     }
 }

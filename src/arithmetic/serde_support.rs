@@ -38,7 +38,7 @@ impl<'de> Deserialize<'de> for BigInt {
             where
                 E: serde::de::Error,
             {
-                Ok(BigInt::from_bytes(v))
+                Ok(BigInt::from_bytes_be(v))
             }
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -49,7 +49,7 @@ impl<'de> Deserialize<'de> for BigInt {
                 while let Some(byte) = seq.next_element::<u8>()? {
                     bytes.push(byte)
                 }
-                Ok(BigInt::from_bytes(&bytes))
+                Ok(BigInt::from_bytes_be(&bytes))
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -57,7 +57,7 @@ impl<'de> Deserialize<'de> for BigInt {
                 E: Error,
             {
                 let bytes = hex::decode(v).map_err(|_| E::custom("malformed hex encoding"))?;
-                Ok(BigInt::from_bytes(&bytes))
+                Ok(BigInt::from_bytes_be(&bytes))
             }
         }
 

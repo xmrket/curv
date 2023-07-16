@@ -17,10 +17,10 @@ use super::Point;
 /// ## Example
 ///
 /// ```rust
-/// # use curv::elliptic::curves::{Point, Scalar, Secp256k1};
-/// let s = Scalar::<Secp256k1>::random();
-/// let g = Point::<Secp256k1>::generator();
-/// let result: Point<Secp256k1> = s * g;
+/// # use curv::elliptic::curves::{Point, Scalar, Ed25519};
+/// let s = Scalar::<Ed25519>::random();
+/// let g = Point::<Ed25519>::generator();
+/// let result: Point<Ed25519> = s * g;
 /// ```
 ///
 /// ## Performance
@@ -29,14 +29,14 @@ use super::Point;
 /// converting generator into the `Point<E>` as long as it's possible:
 ///
 /// ```rust
-/// # use curv::elliptic::curves::{Point, Scalar, Secp256k1, Generator};
-/// let s: Scalar<Secp256k1> = Scalar::random();
+/// # use curv::elliptic::curves::{Point, Scalar, Ed25519, Generator};
+/// let s: Scalar<Ed25519> = Scalar::random();
 /// // Generator multiplication:
-/// let g: Generator<Secp256k1> = Point::generator();
-/// let p1: Point<Secp256k1> = g * &s;
+/// let g: Generator<Ed25519> = Point::generator();
+/// let p1: Point<Ed25519> = g * &s;
 /// // Point multiplication:
-/// let g: Point<Secp256k1> = g.to_point();
-/// let p2: Point<Secp256k1> = g * &s;
+/// let g: Point<Ed25519> = g.to_point();
+/// let p2: Point<Ed25519> = g * &s;
 /// // Result will be the same, but generator multiplication is usually faster
 /// assert_eq!(p1, p2);
 /// ```

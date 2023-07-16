@@ -109,7 +109,7 @@ mod test {
     #[test]
     fn deserializing_from_bytes() {
         let v: &[u8] = b"\x0f\x42\x40";
-        let n = BigInt::from_bytes(v);
+        let n = BigInt::from_bytes_be(v);
         assert_eq!(n, BigInt::from(1_000_000_u32))
     }
 

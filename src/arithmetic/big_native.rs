@@ -1,6 +1,7 @@
 use std::convert::{TryFrom, TryInto};
 use std::{fmt, ops};
 
+use num_prime::PrimalityTestConfig;
 use num_traits::Signed;
 
 use super::errors::*;
@@ -9,7 +10,8 @@ use super::traits::*;
 use num_bigint::BigInt as BN;
 use num_bigint::Sign;
 
-mod primes;
+use num_prime::nt_funcs::{is_prime, next_prime};
+
 mod ring_algorithms;
 
 /// Big integer
@@ -57,8 +59,12 @@ impl Converter for BigInt {
         bytes
     }
 
-    fn from_bytes(bytes: &[u8]) -> Self {
+    fn from_bytes_be(bytes: &[u8]) -> Self {
         BN::from_bytes_be(Sign::Plus, bytes).wrap()
+    }
+
+    fn from_bytes_le(bytes: &[u8]) -> Self {
+        BN::from_bytes_le(Sign::Plus, bytes).wrap()
     }
 
     fn to_hex(&self) -> String {
@@ -131,7 +137,12 @@ impl Primes for BigInt {
         if self.num.sign() != Sign::Plus {
             return BigInt::from(2);
         }
-        let uint = primes::next_prime(self.num.magnitude());
+
+        let mut test = PrimalityTestConfig::bpsw();
+        test.slprp_test = true;
+        test.sprp_trials = 24;
+
+        let uint = next_prime(self.num.magnitude(), Some(test)).unwrap();
         BN::from_biguint(Sign::Plus, uint).wrap()
     }
 
@@ -139,7 +150,10 @@ impl Primes for BigInt {
         if self.num.sign() != Sign::Plus {
             false
         } else {
-            primes::probably_prime(self.num.magnitude(), n as usize)
+            let mut test = PrimalityTestConfig::bpsw();
+            test.slprp_test = true;
+            test.sprp_trials = n as usize;
+            is_prime(self.num.magnitude(), Some(test)).probably()
         }
     }
 }
