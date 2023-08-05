@@ -1,7 +1,7 @@
 [package]
 name = "curv-kzen"
 version = "0.10.0"
-edition = "2018"
+edition = "2021"
 authors = [
     "Omer Shlomovits",
     "Denis Varlakov",
@@ -15,7 +15,7 @@ name = "curv"
 crate-type = ["lib"]
 
 [dependencies]
-curve25519-dalek = { version = "4.0.0-rc.3", features = ["rand_core", "precomputed-tables"] }
+curve25519-dalek = { version = "4.0.0", features = ["rand_core", "precomputed-tables"] }
 digest = "0.10.7"
 generic-array = "0.14.7"
 typenum = "1.16.0"
